@@ -1,2 +1,4 @@
 /.idea
 /target
+/rhea_db
+/rhea_raft
