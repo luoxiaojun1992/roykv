@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package roykv;
+
+service Kv {
+  rpc Get (GetRequest) returns (GetReply) {}
+}
+
+message GetRequest {
+  string key = 1;
+}
+
+message GetReply {
+  string value = 1;
+}

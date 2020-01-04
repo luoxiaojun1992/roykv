@@ -31,7 +31,7 @@ initialServerList: 127.0.0.1:8181,127.0.0.1:8182,127.0.0.1:8183
 
 # 是否只从 leader 节点读取数据, 默认为true, 当然从follower节点读也能保证线性一致读, 但是如果一个 follower 节点在同步数据时落后较多的情况下
 # 将导致读请求超时, 从而导致 rheaKV 客户端 failover 逻辑启动重新从 leader 节点上尝试读取, 最终结果就是读请求延时较长
-onlyLeaderRead: true
+onlyLeaderRead: false
 
 # RPC组件相关选项设置
 # rpcOptions:
