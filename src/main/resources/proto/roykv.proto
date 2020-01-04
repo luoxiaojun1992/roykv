@@ -5,6 +5,9 @@ package roykv;
 service Kv {
   rpc Get (GetRequest) returns (GetReply) {}
   rpc Exist (ExistRequest) returns (ExistReply) {}
+  rpc Scan (ScanRequest) returns (ScanReply) {}
+  rpc MGet (MGetRequest) returns (MGetReply) {}
+  rpc GetAll (GetAllRequest) returns (GetAllReply) {}
 }
 
 message GetRequest {
