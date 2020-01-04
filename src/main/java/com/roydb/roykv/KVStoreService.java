@@ -32,4 +32,14 @@ public class KVStoreService extends KvGrpc.KvImplBase {
         responseObserver.onNext(Roykv.GetReply.newBuilder().setValue(value).build());
         responseObserver.onCompleted();
     }
+
+    @Override
+    public void exist(Roykv.ExistRequest request, StreamObserver<Roykv.ExistReply> responseObserver) {
+        byte[] bytesValNode1 = kvStore.bGet(request.getKey().getBytes(charset));
+
+        boolean existed = bytesValNode1 != null;
+
+        responseObserver.onNext(Roykv.ExistReply.newBuilder().setExisted(existed).build());
+        responseObserver.onCompleted();
+    }
 }

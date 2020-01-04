@@ -4,6 +4,7 @@ package roykv;
 
 service Kv {
   rpc Get (GetRequest) returns (GetReply) {}
+  rpc Exist (ExistRequest) returns (ExistReply) {}
 }
 
 message GetRequest {
@@ -12,4 +13,12 @@ message GetRequest {
 
 message GetReply {
   string value = 1;
+}
+
+message ExistRequest {
+  string key = 1;
+}
+
+message ExistReply {
+  bool existed = 1;
 }
