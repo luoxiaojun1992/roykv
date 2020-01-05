@@ -75,7 +75,7 @@ public class KVStoreService extends KvGrpc.KvImplBase {
             }
         }
 
-        if ((!("".equals(endKey))) && (count < limit)) {
+        if ((count < limit) && (!("".equals(endKey)))) {
             byte[] lastKeyValue = kvStore.bGet(endKey);
             if (lastKeyValue != null) {
                 scanReplyBuilder.putData(endKey, new String(lastKeyValue));
