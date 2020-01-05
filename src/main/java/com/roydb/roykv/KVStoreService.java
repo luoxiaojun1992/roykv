@@ -3,6 +3,7 @@ package com.roydb.roykv;
 import com.alipay.sofa.jraft.rhea.client.RheaIterator;
 import com.alipay.sofa.jraft.rhea.client.RheaKVStore;
 import com.alipay.sofa.jraft.rhea.storage.KVEntry;
+import com.alipay.sofa.jraft.rhea.util.ByteArray;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,9 @@ import roykv.KvGrpc;
 import roykv.Roykv;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class KVStoreService extends KvGrpc.KvImplBase {
 
@@ -72,7 +76,21 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
     @Override
     public void mGet(Roykv.MGetRequest request, StreamObserver<Roykv.MGetReply> responseObserver) {
-        super.mGet(request, responseObserver);
+        Roykv.MGetReply.Builder mGetReplyBuilder = Roykv.MGetReply.newBuilder();
+
+        List<byte[]> keys = new ArrayList<byte[]>();
+
+        for (int i = 0; i < request.getKeysCount(); ++i) {
+            keys.add(request.getKeys(i).getBytes(charset));
+        }
+
+        Map<ByteArray, byte[]> keyValues = kvStore.bMultiGet(keys, true);
+        keyValues.forEach((ByteArray k, byte[] v) -> {
+            mGetReplyBuilder.putData(new String(k.getBytes()), new String(v));
+        });
+
+        responseObserver.onNext(mGetReplyBuilder.build());
+        responseObserver.onCompleted();
     }
 
     @Override
