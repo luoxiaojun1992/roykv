@@ -55,6 +55,7 @@ public class KVStoreService extends KvGrpc.KvImplBase {
     public void scan(Roykv.ScanRequest request, StreamObserver<Roykv.ScanReply> responseObserver) {
         String startKey = "".equals(request.getStartKey()) ? null : request.getStartKey();
         String endKey = "".equals(request.getEndKey()) ? null : request.getEndKey();
+        String keyPrefix = request.getKeyPrefix();
         long limit = request.getLimit();
 
         Roykv.ScanReply.Builder scanReplyBuilder = Roykv.ScanReply.newBuilder();
@@ -62,7 +63,10 @@ public class KVStoreService extends KvGrpc.KvImplBase {
         RheaIterator<KVEntry> iterator = kvStore.iterator(startKey, endKey, (int) limit);
         while (iterator.hasNext()) {
             KVEntry kvEntry = iterator.next();
-            scanReplyBuilder.putData(new String(kvEntry.getKey()), new String(kvEntry.getValue()));
+            String key = new String(kvEntry.getKey());
+            if (StringUtils.startsWith(key, keyPrefix)) {
+                scanReplyBuilder.putData(key, new String(kvEntry.getValue()));
+            }
         }
 
         if ((!("".equals(endKey))) && (scanReplyBuilder.getDataMap().size() < limit)) {

@@ -29,7 +29,8 @@ message ExistReply {
 message ScanRequest {
   string startKey = 1;
   string endKey = 2;
-  uint64 limit = 3;
+  string keyPrefix = 3;
+  uint64 limit = 4;
 }
 
 message ScanReply {
