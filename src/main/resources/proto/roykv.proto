@@ -33,8 +33,13 @@ message ScanRequest {
   uint64 limit = 4;
 }
 
+message KVEntry {
+  string key = 1;
+  string value = 2;
+}
+
 message ScanReply {
-  map<string, string> data = 1;
+  repeated KVEntry data = 1;
 }
 
 message MGetRequest {

@@ -67,7 +67,8 @@ public class KVStoreService extends KvGrpc.KvImplBase {
             KVEntry kvEntry = iterator.next();
             String key = new String(kvEntry.getKey());
             if (StringUtils.startsWith(key, keyPrefix)) {
-                scanReplyBuilder.putData(key, new String(kvEntry.getValue()));
+                scanReplyBuilder.addData(Roykv.KVEntry.newBuilder().setKey(key).
+                        setValue(new String(kvEntry.getValue())).build());
                 ++count;
                 if (count >= limit) {
                     break;
@@ -78,7 +79,8 @@ public class KVStoreService extends KvGrpc.KvImplBase {
         if ((count < limit) && (!("".equals(endKey)))) {
             byte[] lastKeyValue = kvStore.bGet(endKey);
             if (lastKeyValue != null) {
-                scanReplyBuilder.putData(endKey, new String(lastKeyValue));
+                scanReplyBuilder.addData(Roykv.KVEntry.newBuilder().setKey(endKey).
+                        setValue(new String(lastKeyValue)).build());
             }
         }
 
