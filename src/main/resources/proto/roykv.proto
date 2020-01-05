@@ -25,3 +25,29 @@ message ExistRequest {
 message ExistReply {
   bool existed = 1;
 }
+
+message ScanRequest {
+  string startKey = 1;
+  string endKey = 2;
+  uint64 limit = 3;
+}
+
+message ScanReply {
+  map<string, string> data = 1;
+}
+
+message MGetRequest {
+  repeated string keys = 1;
+}
+
+message MGetReply {
+  map<string, string> data = 1;
+}
+
+message GetAllRequest {
+  string keyPrefix = 1;
+}
+
+message GetAllReply {
+  map<string, string> data = 1;
+}
