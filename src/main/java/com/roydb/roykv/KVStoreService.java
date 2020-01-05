@@ -5,6 +5,7 @@ import com.alipay.sofa.jraft.rhea.client.RheaKVStore;
 import com.alipay.sofa.jraft.rhea.storage.KVEntry;
 import com.alipay.sofa.jraft.rhea.util.ByteArray;
 import io.grpc.stub.StreamObserver;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import roykv.KvGrpc;
@@ -96,6 +97,20 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
     @Override
     public void getAll(Roykv.GetAllRequest request, StreamObserver<Roykv.GetAllReply> responseObserver) {
-        super.getAll(request, responseObserver);
+        Roykv.GetAllReply.Builder getAllReplyBuilder = Roykv.GetAllReply.newBuilder();
+
+        String keyPrefix = request.getKeyPrefix();
+
+        RheaIterator<KVEntry> iterator = kvStore.iterator((String) null, (String) null,10000);
+        while (iterator.hasNext()) {
+            KVEntry kvEntry = iterator.next();
+            String key = new String(kvEntry.getKey());
+            if (StringUtils.startsWith(key, keyPrefix)) {
+                getAllReplyBuilder.putData(key, new String(kvEntry.getValue()));
+            }
+        }
+
+        responseObserver.onNext(getAllReplyBuilder.build());
+        responseObserver.onCompleted();
     }
 }
