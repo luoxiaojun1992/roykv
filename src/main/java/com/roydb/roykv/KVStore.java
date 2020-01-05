@@ -20,6 +20,8 @@ public class KVStore {
     private static final Charset charset = StandardCharsets.UTF_8;
 
     public static void main(String[] args) throws IOException {
+        //todo refactor conf path from args
+
         final ObjectMapper mapperNode1 = new ObjectMapper(new YAMLFactory());
         final RheaKVStoreOptions optsNode1 = mapperNode1.readValue(
                 new File("src/main/resources/conf/rheakv_node_1_conf"),
