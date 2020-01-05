@@ -12,11 +12,12 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class KVStore {
 
     private static final Logger logger = LoggerFactory.getLogger(KVStore.class);
-    private static final Charset charset = Charset.forName("utf-8");
+    private static final Charset charset = StandardCharsets.UTF_8;
 
     public static void main(String[] args) throws IOException {
         final ObjectMapper mapperNode1 = new ObjectMapper(new YAMLFactory());

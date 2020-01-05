@@ -11,6 +11,7 @@ import roykv.KvGrpc;
 import roykv.Roykv;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ import java.util.Map;
 public class KVStoreService extends KvGrpc.KvImplBase {
 
     private static final Logger logger = LoggerFactory.getLogger(KVStore.class);
-    private static final Charset charset = Charset.forName("utf-8");
+    private static final Charset charset = StandardCharsets.UTF_8;
 
     private RheaKVStore kvStore;
 
@@ -57,9 +58,9 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
         Roykv.ScanReply.Builder scanReplyBuilder = Roykv.ScanReply.newBuilder();
 
-        RheaIterator iterator = kvStore.iterator(startKey, endKey, (int) limit);
+        RheaIterator<KVEntry> iterator = kvStore.iterator(startKey, endKey, (int) limit);
         while (iterator.hasNext()) {
-            KVEntry kvEntry = (KVEntry) iterator.next();
+            KVEntry kvEntry = iterator.next();
             scanReplyBuilder.putData(new String(kvEntry.getKey()), new String(kvEntry.getValue()));
         }
 
