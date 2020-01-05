@@ -60,16 +60,22 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
         Roykv.ScanReply.Builder scanReplyBuilder = Roykv.ScanReply.newBuilder();
 
+        int count = 0;
+
         RheaIterator<KVEntry> iterator = kvStore.iterator(startKey, endKey, (int) limit);
         while (iterator.hasNext()) {
             KVEntry kvEntry = iterator.next();
             String key = new String(kvEntry.getKey());
             if (StringUtils.startsWith(key, keyPrefix)) {
                 scanReplyBuilder.putData(key, new String(kvEntry.getValue()));
+                ++count;
+                if (count >= limit) {
+                    break;
+                }
             }
         }
 
-        if ((!("".equals(endKey))) && (scanReplyBuilder.getDataMap().size() < limit)) {
+        if ((!("".equals(endKey))) && (count < limit)) {
             byte[] lastKeyValue = kvStore.bGet(endKey);
             if (lastKeyValue != null) {
                 scanReplyBuilder.putData(endKey, new String(lastKeyValue));
