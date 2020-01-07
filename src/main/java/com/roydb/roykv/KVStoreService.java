@@ -29,6 +29,13 @@ public class KVStoreService extends KvGrpc.KvImplBase {
     }
 
     @Override
+    public void set(Roykv.SetRequest request, StreamObserver<Roykv.SetReply> responseObserver) {
+        boolean result = kvStore.bPut(request.getKey(), request.getValue().getBytes(charset));
+        responseObserver.onNext(Roykv.SetReply.newBuilder().setResult(result).build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
     public void get(Roykv.GetRequest request, StreamObserver<Roykv.GetReply> responseObserver) {
         byte[] bytesValNode1 = kvStore.bGet(request.getKey(), true);
 
