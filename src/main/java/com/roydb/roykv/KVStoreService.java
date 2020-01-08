@@ -59,7 +59,7 @@ public class KVStoreService extends KvGrpc.KvImplBase {
                 undoLogObj.put("key", request.getKey());
                 txnService.addTxnUndoLog(txnId, undoLogObj);
             } else {
-                throw new RuntimeException(String.format("Txn [%d] status is [%d]", txnId, txnStatus));
+                throw new RuntimeException(String.format("Txn[%d] status is [%d]", txnId, txnStatus));
             }
         } else {
             boolean result = kvStore.bPut(request.getKey(), request.getValue().getBytes(charset));
