@@ -47,6 +47,7 @@ public class KVStore {
         if (rheaKVStoreNode1.init(optsNode1) && rheaKVStoreNode2.init(optsNode2) && rheaKVStoreNode3.init(optsNode3)) {
             ServerBuilder.forPort(9999)
                     .addService(new KVStoreService(rheaKVStoreNode1))
+                    .addService(new TxnService(rheaKVStoreNode1))
                     .build()
                     .start();
         }

@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class KVStoreService extends KvGrpc.KvImplBase {
 
-    private static final Logger logger = LoggerFactory.getLogger(KVStore.class);
+    private static final Logger logger = LoggerFactory.getLogger(KVStoreService.class);
     private static final Charset charset = StandardCharsets.UTF_8;
 
     private RheaKVStore kvStore;

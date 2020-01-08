@@ -14,6 +14,7 @@ service Kv {
 message SetRequest {
   string key = 1;
   string value = 2;
+  uint64 txnId = 3;
 }
 
 message SetReply {
@@ -22,6 +23,7 @@ message SetReply {
 
 message GetRequest {
   string key = 1;
+  uint64 txnId = 2;
 }
 
 message GetReply {
@@ -30,6 +32,7 @@ message GetReply {
 
 message ExistRequest {
   string key = 1;
+  uint64 txnId = 2;
 }
 
 message ExistReply {
@@ -41,6 +44,7 @@ message ScanRequest {
   string endKey = 2;
   string keyPrefix = 3;
   uint64 limit = 4;
+  uint64 txnId = 5;
 }
 
 message KVEntry {
@@ -54,6 +58,7 @@ message ScanReply {
 
 message MGetRequest {
   repeated string keys = 1;
+  uint64 txnId = 2;
 }
 
 message MGetReply {
@@ -62,8 +67,39 @@ message MGetReply {
 
 message GetAllRequest {
   string keyPrefix = 1;
+  uint64 txnId = 2;
 }
 
 message GetAllReply {
   map<string, string> data = 1;
+}
+
+service Txn {
+  rpc Begin (BeginRequest) returns (BeginReply) {}
+  rpc Commit (CommitRequest) returns (CommitReply) {}
+  rpc Rollback (RollbackRequest) returns (RollbackReply) {}
+}
+
+message BeginRequest {
+
+}
+
+message BeginReply {
+  uint64 txnId = 1;
+}
+
+message CommitRequest {
+  uint64 txnId = 1;
+}
+
+message CommitReply {
+  bool result = 1;
+}
+
+message RollbackRequest {
+  uint64 txnId = 1;
+}
+
+message RollbackReply {
+  bool result = 1;
 }
