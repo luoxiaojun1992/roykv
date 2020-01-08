@@ -76,7 +76,7 @@ public class KVStore {
             //todo rollback failed txn (tick)
 
             ServerBuilder.forPort(9999)
-                    .addService(new KVStoreService(rheaKVStoreNode1))
+                    .addService(new KVStoreService(rheaKVStoreNode1, rheaTxnStoreNode1))
                     .addService(new TxnService(rheaKVStoreNode1, rheaTxnStoreNode1))
                     .build()
                     .start();

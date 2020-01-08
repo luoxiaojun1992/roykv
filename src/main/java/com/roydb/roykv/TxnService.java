@@ -113,7 +113,7 @@ public class TxnService extends TxnGrpc.TxnImplBase {
     }
 
     public boolean addTxnRedoLog(long txnId, JSONObject redoLog) {
-        //todo lock
+        //todo lock ?
 
         byte[] byteTxn = getTxn(txnId);
         if (byteTxn == null) {
@@ -127,7 +127,7 @@ public class TxnService extends TxnGrpc.TxnImplBase {
     }
 
     public boolean addTxnUndoLog(long txnId, JSONObject undoLog) {
-        //todo lock
+        //todo lock ?
 
         byte[] byteTxn = getTxn(txnId);
         if (byteTxn == null) {

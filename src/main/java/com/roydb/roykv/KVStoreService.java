@@ -1,5 +1,6 @@
 package com.roydb.roykv;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alipay.sofa.jraft.rhea.client.RheaIterator;
 import com.alipay.sofa.jraft.rhea.client.RheaKVStore;
 import com.alipay.sofa.jraft.rhea.storage.KVEntry;
@@ -24,15 +25,47 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
     private RheaKVStore kvStore;
 
-    KVStoreService(RheaKVStore kvStore) {
+    private RheaKVStore txnStore;
+
+    KVStoreService(RheaKVStore kvStore, RheaKVStore txnStore) {
         this.kvStore = kvStore;
+        this.txnStore = txnStore;
     }
 
     @Override
     public void set(Roykv.SetRequest request, StreamObserver<Roykv.SetReply> responseObserver) {
-        boolean result = kvStore.bPut(request.getKey(), request.getValue().getBytes(charset));
-        responseObserver.onNext(Roykv.SetReply.newBuilder().setResult(result).build());
-        responseObserver.onCompleted();
+        //todo different value type
+
+        //todo lock
+        long txnId = request.getTxnId();
+        if (txnId > 0L) {
+            TxnService txnService = new TxnService(kvStore, txnStore);
+            byte txnStatus = txnService.getTxnStatus(txnId);
+            if (txnStatus == TxnService.TXN_OPEN) {
+                JSONObject redoLogObj = new JSONObject();
+                redoLogObj.put("opType", "set");
+                redoLogObj.put("key", request.getKey());
+                redoLogObj.put("value", request.getValue());
+                txnService.addTxnRedoLog(txnId, redoLogObj);
+
+                JSONObject undoLogObj = new JSONObject();
+                byte[] byteValue = kvStore.bGet(request.getKey(), true);
+                if (byteValue == null) {
+                    undoLogObj.put("opType", "del");
+                } else {
+                    undoLogObj.put("opType", "set");
+                    undoLogObj.put("value", new String(byteValue));
+                }
+                undoLogObj.put("key", request.getKey());
+                txnService.addTxnUndoLog(txnId, undoLogObj);
+            } else {
+                throw new RuntimeException(String.format("Txn [%d] status is [%d]", txnId, txnStatus));
+            }
+        } else {
+            boolean result = kvStore.bPut(request.getKey(), request.getValue().getBytes(charset));
+            responseObserver.onNext(Roykv.SetReply.newBuilder().setResult(result).build());
+            responseObserver.onCompleted();
+        }
     }
 
     @Override
