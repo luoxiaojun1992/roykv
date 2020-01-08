@@ -46,18 +46,23 @@ public class KVStoreService extends KvGrpc.KvImplBase {
                 redoLogObj.put("opType", "set");
                 redoLogObj.put("key", request.getKey());
                 redoLogObj.put("value", request.getValue());
-                txnService.addTxnRedoLog(txnId, redoLogObj);
-
-                JSONObject undoLogObj = new JSONObject();
-                byte[] byteValue = kvStore.bGet(request.getKey(), true);
-                if (byteValue == null) {
-                    undoLogObj.put("opType", "del");
+                if (!txnService.addTxnRedoLog(txnId, redoLogObj)) {
+                    responseObserver.onNext(Roykv.SetReply.newBuilder().setResult(false).build());
                 } else {
-                    undoLogObj.put("opType", "set");
-                    undoLogObj.put("value", new String(byteValue));
+                    JSONObject undoLogObj = new JSONObject();
+                    byte[] byteValue = kvStore.bGet(request.getKey(), true);
+                    if (byteValue == null) {
+                        undoLogObj.put("opType", "del");
+                    } else {
+                        undoLogObj.put("opType", "set");
+                        undoLogObj.put("value", new String(byteValue));
+                    }
+                    undoLogObj.put("key", request.getKey());
+                    responseObserver.onNext(
+                            Roykv.SetReply.newBuilder().setResult(txnService.addTxnUndoLog(txnId, undoLogObj)).build()
+                    );
                 }
-                undoLogObj.put("key", request.getKey());
-                txnService.addTxnUndoLog(txnId, undoLogObj);
+                responseObserver.onCompleted();
             } else {
                 throw new RuntimeException(String.format("Txn[%d] status is [%d]", txnId, txnStatus));
             }
