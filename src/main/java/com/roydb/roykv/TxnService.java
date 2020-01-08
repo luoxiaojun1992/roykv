@@ -98,6 +98,34 @@ public class TxnService extends TxnGrpc.TxnImplBase {
         return executeOpLog(txnUndoLog);
     }
 
+    private boolean addTxnRedoLog(long txnId, JSONObject redoLog) {
+        //todo lock
+
+        byte[] byteTxn = getTxn(txnId);
+        if (byteTxn == null) {
+            throw new RuntimeException(String.format("Txn[%d] not exists.", txnId));
+        }
+
+        JSONObject txnObj = JSON.parseObject(new String(byteTxn));
+        txnObj.put("redoLog", redoLog);
+
+        return setTxn(txnId, txnObj);
+    }
+
+    private boolean addTxnUndoLog(long txnId, JSONObject undoLog) {
+        //todo lock
+
+        byte[] byteTxn = getTxn(txnId);
+        if (byteTxn == null) {
+            throw new RuntimeException(String.format("Txn[%d] not exists.", txnId));
+        }
+
+        JSONObject txnObj = JSON.parseObject(new String(byteTxn));
+        txnObj.put("undoLog", undoLog);
+
+        return setTxn(txnId, txnObj);
+    }
+
     private boolean commitTxn(long txnId) {
         byte[] byteTxn = getTxn(txnId);
         if (byteTxn == null) {
