@@ -15,13 +15,21 @@ import java.nio.charset.StandardCharsets;
 
 public class TxnService extends TxnGrpc.TxnImplBase {
 
+    public static final byte TXN_OPEN = 0;
+    public static final byte TXN_COMMITTED = 1;
+    public static final byte TXN_CANCELED = 2;
+
+
     private static final Logger logger = LoggerFactory.getLogger(TxnService.class);
     private static final Charset charset = StandardCharsets.UTF_8;
 
     private RheaKVStore kvStore;
 
-    TxnService(RheaKVStore kvStore) {
+    private RheaKVStore txnStore;
+
+    TxnService(RheaKVStore kvStore, RheaKVStore txnStore) {
         this.kvStore = kvStore;
+        this.txnStore = txnStore;
     }
 
     @Override
@@ -35,11 +43,11 @@ public class TxnService extends TxnGrpc.TxnImplBase {
     }
 
     private byte[] getTxn(long txnId) {
-        return kvStore.bGet("txn::" + String.valueOf(txnId), true);
+        return txnStore.bGet("txn::" + String.valueOf(txnId), true);
     }
 
-    private boolean setTxn(long txnId, JSONObject txn) {
-        return kvStore.bPut("txn::" + String.valueOf(txnId), JSON.toJSONBytes(txn));
+    public boolean setTxn(long txnId, JSONObject txn) {
+        return txnStore.bPut("txn::" + String.valueOf(txnId), JSON.toJSONBytes(txn));
     }
 
     private boolean executeOpLog(String log) {
@@ -54,12 +62,16 @@ public class TxnService extends TxnGrpc.TxnImplBase {
             String key = logObj.getString("key");
             switch (opType) {
                 case "set":
-                    if (!kvStore.bPut(key, logObj.getBytes("value"))) {
+                    if ((kvStore.bGet(key) != null) &&
+                            (!kvStore.bPut(key, logObj.getBytes("value")))
+                    ) {
                         result = false;
                     }
                     break;
                 case "del":
-                    if (!kvStore.bDelete(key)) {
+                    if ((kvStore.bGet(key) != null) &&
+                            (!kvStore.bDelete(key))
+                    ) {
                         result = false;
                     }
                     break;
@@ -98,7 +110,7 @@ public class TxnService extends TxnGrpc.TxnImplBase {
         return executeOpLog(txnUndoLog);
     }
 
-    private boolean addTxnRedoLog(long txnId, JSONObject redoLog) {
+    public boolean addTxnRedoLog(long txnId, JSONObject redoLog) {
         //todo lock
 
         byte[] byteTxn = getTxn(txnId);
@@ -112,7 +124,7 @@ public class TxnService extends TxnGrpc.TxnImplBase {
         return setTxn(txnId, txnObj);
     }
 
-    private boolean addTxnUndoLog(long txnId, JSONObject undoLog) {
+    public boolean addTxnUndoLog(long txnId, JSONObject undoLog) {
         //todo lock
 
         byte[] byteTxn = getTxn(txnId);
@@ -133,21 +145,31 @@ public class TxnService extends TxnGrpc.TxnImplBase {
         }
 
         JSONObject txnObj = JSON.parseObject(new String(byteTxn));
-        txnObj.put("status", 1);
+        txnObj.put("status", TXN_COMMITTED);
 
         return setTxn(txnId, txnObj);
     }
 
-    private boolean rollbackTxn(long txnId) {
+    public boolean rollbackTxn(long txnId) {
         byte[] byteTxn = getTxn(txnId);
         if (byteTxn == null) {
             throw new RuntimeException(String.format("Txn[%d] not exists.", txnId));
         }
 
         JSONObject txnObj = JSON.parseObject(new String(byteTxn));
-        txnObj.put("status", 2);
+        txnObj.put("status", TXN_CANCELED);
 
         return setTxn(txnId, txnObj);
+    }
+
+    public byte getTxnStatus(long txnId) {
+        byte[] byteTxn = getTxn(txnId);
+        if (byteTxn == null) {
+            throw new RuntimeException(String.format("Txn[%d] not exists.", txnId));
+        }
+
+        JSONObject txnObj = JSON.parseObject(new String(byteTxn));
+        return txnObj.getByte("status");
     }
 
     @Override
@@ -171,6 +193,17 @@ public class TxnService extends TxnGrpc.TxnImplBase {
 
     @Override
     public void rollback(Roykv.RollbackRequest request, StreamObserver<Roykv.RollbackReply> responseObserver) {
-        super.rollback(request, responseObserver);
+        //todo lock
+
+        long txnId = request.getTxnId();
+
+        boolean result = executeUndoLog(txnId);
+
+        if (result) {
+            result = rollbackTxn(txnId);
+        }
+
+        responseObserver.onNext(Roykv.RollbackReply.newBuilder().setResult(result).build());
+        responseObserver.onCompleted();
     }
 }
