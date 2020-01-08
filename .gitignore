@@ -2,3 +2,5 @@
 /target
 /rhea_db
 /rhea_raft
+/rhea_txn_db
+/rhea_txn_raft

@@ -159,6 +159,12 @@
             <artifactId>metrics-core</artifactId>
             <version>4.0.2</version>
         </dependency>
+        <!-- fastjson -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.62</version>
+        </dependency>
     </dependencies>
 
 </project>
