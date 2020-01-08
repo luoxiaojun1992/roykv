@@ -51,6 +51,8 @@ public class TxnService extends TxnGrpc.TxnImplBase {
     }
 
     private boolean executeOpLog(String log) {
+        //todo batch put 考虑失败后单个op重试
+
         boolean result = true;
 
         JSONArray logArr = JSON.parseArray(log);
