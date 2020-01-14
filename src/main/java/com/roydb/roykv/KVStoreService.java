@@ -121,8 +121,8 @@ public class KVStoreService extends KvGrpc.KvImplBase {
             }
         }
 
-        if ((count < limit) && (!("".equals(endKey)))) {
-            byte[] lastKeyValue = kvStore.bGet(endKey);
+        if ((count < limit) && (endKey != null)) {
+            byte[] lastKeyValue = kvStore.bGet(endKey, true);
             if (lastKeyValue != null) {
                 scanReplyBuilder.addData(Roykv.KVEntry.newBuilder().setKey(endKey).
                         setValue(new String(lastKeyValue)).build());
@@ -168,6 +168,36 @@ public class KVStoreService extends KvGrpc.KvImplBase {
         }
 
         responseObserver.onNext(getAllReplyBuilder.build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void count(Roykv.CountRequest request, StreamObserver<Roykv.CountReply> responseObserver) {
+        String startKey = "".equals(request.getStartKey()) ? null : request.getStartKey();
+        String endKey = "".equals(request.getEndKey()) ? null : request.getEndKey();
+        String keyPrefix = request.getKeyPrefix();
+
+        Roykv.CountReply.Builder countReplyBuilder = Roykv.CountReply.newBuilder();
+
+        int count = 0;
+
+        RheaIterator<KVEntry> iterator = kvStore.iterator(startKey, endKey, 10000);
+        while (iterator.hasNext()) {
+            KVEntry kvEntry = iterator.next();
+            String key = new String(kvEntry.getKey());
+            if (StringUtils.startsWith(key, keyPrefix)) {
+                ++count;
+            }
+        }
+
+        if (endKey != null) {
+            byte[] lastKeyValue = kvStore.bGet(endKey, true);
+            if (lastKeyValue != null) {
+                ++count;
+            }
+        }
+
+        responseObserver.onNext(countReplyBuilder.setCount(count).build());
         responseObserver.onCompleted();
     }
 }

@@ -9,6 +9,7 @@ service Kv {
   rpc Scan (ScanRequest) returns (ScanReply) {}
   rpc MGet (MGetRequest) returns (MGetReply) {}
   rpc GetAll (GetAllRequest) returns (GetAllReply) {}
+  rpc Count (CountRequest) returns (CountReply) {}
 }
 
 message SetRequest {
@@ -72,6 +73,17 @@ message GetAllRequest {
 
 message GetAllReply {
   map<string, string> data = 1;
+}
+
+message CountRequest {
+  string startKey = 1;
+  string endKey = 2;
+  string keyPrefix = 3;
+  uint64 txnId = 4;
+}
+
+message CountReply {
+  uint64 count = 1;
 }
 
 service Txn {
