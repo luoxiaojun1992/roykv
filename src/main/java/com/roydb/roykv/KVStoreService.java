@@ -34,8 +34,6 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
     @Override
     public void set(Roykv.SetRequest request, StreamObserver<Roykv.SetReply> responseObserver) {
-        //todo different value type
-
         //todo lock
         long txnId = request.getTxnId();
         if (txnId > 0L) {

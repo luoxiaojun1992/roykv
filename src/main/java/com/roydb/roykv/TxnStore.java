@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-public class KVStore {
+public class TxnStore {
 
     private static final Logger logger = LoggerFactory.getLogger(KVStore.class);
     private static final Charset charset = StandardCharsets.UTF_8;
@@ -75,8 +75,9 @@ public class KVStore {
         ) {
             //todo rollback failed txn (tick)
 
-            ServerBuilder.forPort(50053)
+            ServerBuilder.forPort(9998)
                     .addService(new KVStoreService(rheaKVStoreNode1, rheaTxnStoreNode1))
+                    .addService(new TxnService(rheaKVStoreNode1, rheaTxnStoreNode1))
                     .build()
                     .start();
         }
