@@ -38,6 +38,10 @@ public class TxnService extends TxnGrpc.TxnImplBase {
 
         long txnId = System.nanoTime();
 
+        if (!setTxn(txnId, new JSONObject())) {
+            throw new RuntimeException(String.format("Creating txn[%d] was failed", txnId));
+        }
+
         responseObserver.onNext(Roykv.BeginReply.newBuilder().setTxnId(txnId).build());
         responseObserver.onCompleted();
     }
@@ -46,7 +50,7 @@ public class TxnService extends TxnGrpc.TxnImplBase {
         return txnStore.bGet("txn::" + String.valueOf(txnId), true);
     }
 
-    public boolean setTxn(long txnId, JSONObject txn) {
+    private boolean setTxn(long txnId, JSONObject txn) {
         return txnStore.bPut("txn::" + String.valueOf(txnId), JSON.toJSONBytes(txn));
     }
 
@@ -114,6 +118,7 @@ public class TxnService extends TxnGrpc.TxnImplBase {
 
     public boolean addTxnRedoLog(long txnId, JSONObject redoLog) {
         //todo lock ?
+        //todo grpc
 
         byte[] byteTxn = getTxn(txnId);
         if (byteTxn == null) {
@@ -128,6 +133,7 @@ public class TxnService extends TxnGrpc.TxnImplBase {
 
     public boolean addTxnUndoLog(long txnId, JSONObject undoLog) {
         //todo lock ?
+        //todo grpc
 
         byte[] byteTxn = getTxn(txnId);
         if (byteTxn == null) {
@@ -152,7 +158,7 @@ public class TxnService extends TxnGrpc.TxnImplBase {
         return setTxn(txnId, txnObj);
     }
 
-    public boolean rollbackTxn(long txnId) {
+    private boolean rollbackTxn(long txnId) {
         byte[] byteTxn = getTxn(txnId);
         if (byteTxn == null) {
             throw new RuntimeException(String.format("Txn[%d] not exists.", txnId));
@@ -165,6 +171,8 @@ public class TxnService extends TxnGrpc.TxnImplBase {
     }
 
     public byte getTxnStatus(long txnId) {
+        //todo grpc
+
         byte[] byteTxn = getTxn(txnId);
         if (byteTxn == null) {
             throw new RuntimeException(String.format("Txn[%d] not exists.", txnId));
