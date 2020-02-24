@@ -10,6 +10,7 @@ service Kv {
   rpc MGet (MGetRequest) returns (MGetReply) {}
   rpc GetAll (GetAllRequest) returns (GetAllReply) {}
   rpc Count (CountRequest) returns (CountReply) {}
+  rpc Incr (IncrRequest) returns (IncrReply) {}
 }
 
 message SetRequest {
@@ -84,6 +85,15 @@ message CountRequest {
 
 message CountReply {
   uint64 count = 1;
+}
+
+message IncrRequest {
+  string key = 1;
+  uint64 step = 2;
+}
+
+message IncrReply {
+  uint64 result = 1;
 }
 
 service Txn {

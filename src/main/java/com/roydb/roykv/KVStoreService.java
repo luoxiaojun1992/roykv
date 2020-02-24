@@ -5,6 +5,7 @@ import com.alipay.sofa.jraft.rhea.client.RheaIterator;
 import com.alipay.sofa.jraft.rhea.client.RheaKVStore;
 import com.alipay.sofa.jraft.rhea.storage.KVEntry;
 import com.alipay.sofa.jraft.rhea.util.ByteArray;
+import com.alipay.sofa.jraft.rhea.util.concurrent.DistributedLock;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class KVStoreService extends KvGrpc.KvImplBase {
 
@@ -177,7 +179,7 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
         Roykv.CountReply.Builder countReplyBuilder = Roykv.CountReply.newBuilder();
 
-        int count = 0;
+        long count = 0;
 
         RheaIterator<KVEntry> iterator = kvStore.iterator(startKey, endKey, 10000);
         while (iterator.hasNext()) {
@@ -198,4 +200,32 @@ public class KVStoreService extends KvGrpc.KvImplBase {
         responseObserver.onNext(countReplyBuilder.setCount(count).build());
         responseObserver.onCompleted();
     }
+
+    @Override
+    public void incr(Roykv.IncrRequest request, StreamObserver<Roykv.IncrReply> responseObserver) {
+        DistributedLock<byte[]> lock = kvStore.getDistributedLock("lock:key:" + request.getKey(), 10, TimeUnit.SECONDS);
+
+        if (lock.tryLock()) {
+            try {
+                byte[] value = kvStore.bGet(request.getKey(), true);
+                String strVal = new String(value);
+                long intVal = Long.parseLong(strVal);
+                intVal = intVal + request.getStep();
+
+                if (kvStore.bPut(request.getKey(), String.valueOf(intVal).getBytes(charset))) {
+                    responseObserver.onNext(Roykv.IncrReply.newBuilder().setResult(intVal).build());
+                } else {
+                    responseObserver.onNext(Roykv.IncrReply.newBuilder().setResult(0).build());
+                }
+                responseObserver.onCompleted();
+            } finally {
+                lock.unlock();
+            }
+        } else {
+            responseObserver.onNext(Roykv.IncrReply.newBuilder().setResult(0).build());
+            responseObserver.onCompleted();
+        }
+    }
+
+    //todo distributed lock & unlock using rheakv
 }
