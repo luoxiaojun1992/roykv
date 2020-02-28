@@ -205,6 +205,8 @@ public class KVStoreService extends KvGrpc.KvImplBase {
     public void incr(Roykv.IncrRequest request, StreamObserver<Roykv.IncrReply> responseObserver) {
         DistributedLock<byte[]> lock = kvStore.getDistributedLock("lock:key:" + request.getKey(), 10, TimeUnit.SECONDS);
 
+        //todo lock wait
+
         if (lock.tryLock()) {
             try {
                 byte[] value = kvStore.bGet(request.getKey(), true);

@@ -11,6 +11,8 @@ service Kv {
   rpc GetAll (GetAllRequest) returns (GetAllReply) {}
   rpc Count (CountRequest) returns (CountReply) {}
   rpc Incr (IncrRequest) returns (IncrReply) {}
+  rpc AtomicOp (AtomicOpRequest) returns (AtomicOpReply) {}
+  rpc BatchAtomicOp (BatchAtomicOpRequest) returns (BatchAtomicOpReply) {}
 }
 
 message SetRequest {
@@ -94,6 +96,18 @@ message IncrRequest {
 
 message IncrReply {
   uint64 result = 1;
+}
+
+message AtomicOpRequest {
+  repeated AtomicOp atomicOp = 1;
+}
+
+message AtomicOp {
+  bool result = 1;
+}
+
+message AtomicOpReply {
+
 }
 
 service Txn {
