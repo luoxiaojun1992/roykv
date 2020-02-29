@@ -1,0 +1,17 @@
+##PlacementDriverServerOptions
+---
+rheaKVStoreOptions:
+  clusterName: pd_test
+
+  placementDriverOptions:
+    fake: true
+
+  storeEngineOptions:
+    rocksDBOptions:
+      dbPath: pd_db/
+    raftDataPath: pd_raft/
+    serverAddress:
+      ip: 127.0.0.1
+      port: 8383
+
+  initialServerList: 127.0.0.1:8381,127.0.0.1:8382,127.0.0.1:8383

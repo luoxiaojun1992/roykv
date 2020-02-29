@@ -27,11 +27,8 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
     private RheaKVStore kvStore;
 
-    private RheaKVStore txnStore;
-
-    KVStoreService(RheaKVStore kvStore, RheaKVStore txnStore) {
+    KVStoreService(RheaKVStore kvStore) {
         this.kvStore = kvStore;
-        this.txnStore = txnStore;
     }
 
     @Override
@@ -39,33 +36,33 @@ public class KVStoreService extends KvGrpc.KvImplBase {
         //todo lock
         long txnId = request.getTxnId();
         if (txnId > 0L) {
-            TxnService txnService = new TxnService(kvStore, txnStore);
-            byte txnStatus = txnService.getTxnStatus(txnId);
-            if (txnStatus == TxnService.TXN_OPEN) {
-                JSONObject redoLogObj = new JSONObject();
-                redoLogObj.put("opType", "set");
-                redoLogObj.put("key", request.getKey());
-                redoLogObj.put("value", request.getValue());
-                if (!txnService.addTxnRedoLog(txnId, redoLogObj)) {
-                    responseObserver.onNext(Roykv.SetReply.newBuilder().setResult(false).build());
-                } else {
-                    JSONObject undoLogObj = new JSONObject();
-                    byte[] byteValue = kvStore.bGet(request.getKey(), true);
-                    if (byteValue == null) {
-                        undoLogObj.put("opType", "del");
-                    } else {
-                        undoLogObj.put("opType", "set");
-                        undoLogObj.put("value", new String(byteValue));
-                    }
-                    undoLogObj.put("key", request.getKey());
-                    responseObserver.onNext(
-                            Roykv.SetReply.newBuilder().setResult(txnService.addTxnUndoLog(txnId, undoLogObj)).build()
-                    );
-                }
-                responseObserver.onCompleted();
-            } else {
-                throw new RuntimeException(String.format("Txn[%d] status is [%d]", txnId, txnStatus));
-            }
+//            TxnService txnService = new TxnService(kvStore, txnStore);
+//            byte txnStatus = txnService.getTxnStatus(txnId);
+//            if (txnStatus == TxnService.TXN_OPEN) {
+//                JSONObject redoLogObj = new JSONObject();
+//                redoLogObj.put("opType", "set");
+//                redoLogObj.put("key", request.getKey());
+//                redoLogObj.put("value", request.getValue());
+//                if (!txnService.addTxnRedoLog(txnId, redoLogObj)) {
+//                    responseObserver.onNext(Roykv.SetReply.newBuilder().setResult(false).build());
+//                } else {
+//                    JSONObject undoLogObj = new JSONObject();
+//                    byte[] byteValue = kvStore.bGet(request.getKey(), true);
+//                    if (byteValue == null) {
+//                        undoLogObj.put("opType", "del");
+//                    } else {
+//                        undoLogObj.put("opType", "set");
+//                        undoLogObj.put("value", new String(byteValue));
+//                    }
+//                    undoLogObj.put("key", request.getKey());
+//                    responseObserver.onNext(
+//                            Roykv.SetReply.newBuilder().setResult(txnService.addTxnUndoLog(txnId, undoLogObj)).build()
+//                    );
+//                }
+//                responseObserver.onCompleted();
+//            } else {
+//                throw new RuntimeException(String.format("Txn[%d] status is [%d]", txnId, txnStatus));
+//            }
         } else {
             boolean result = kvStore.bPut(request.getKey(), request.getValue().getBytes(charset));
             responseObserver.onNext(Roykv.SetReply.newBuilder().setResult(result).build());

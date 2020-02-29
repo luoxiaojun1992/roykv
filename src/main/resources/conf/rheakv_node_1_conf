@@ -9,7 +9,9 @@ clusterName: rhea_test
 # PD 相关选项设置
 placementDriverOptions:
   # fake==true 表示在无 PD 模式下启动, 无 PD 模式将失去"自管理"能力, 所有设置都基于当前这个初始的配置文件
-  fake: true
+  pdGroupId: pd_test--1
+  fake: false
+  initialPdServerList: 127.0.0.1:8381,127.0.0.1:8382,127.0.0.1:8383
 
 # store存储节点的相关选项设置
 storeEngineOptions:

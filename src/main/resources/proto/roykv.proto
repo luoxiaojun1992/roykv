@@ -103,11 +103,19 @@ message AtomicOpRequest {
 }
 
 message AtomicOp {
-  bool result = 1;
+
 }
 
 message AtomicOpReply {
+  bool result = 1;
+}
 
+message BatchAtomicOpRequest {
+  repeated AtomicOpRequest atomicOpRequest = 1;
+}
+
+message BatchAtomicOpReply {
+  repeated AtomicOpReply atomicOpReply = 1;
 }
 
 service Txn {
