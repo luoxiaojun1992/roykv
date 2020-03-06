@@ -6,6 +6,7 @@ import com.alipay.sofa.jraft.rhea.client.RheaKVStore;
 import com.alipay.sofa.jraft.rhea.storage.KVEntry;
 import com.alipay.sofa.jraft.rhea.util.ByteArray;
 import com.alipay.sofa.jraft.rhea.util.concurrent.DistributedLock;
+import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -29,6 +30,20 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
     KVStoreService(RheaKVStore kvStore) {
         this.kvStore = kvStore;
+    }
+
+    @Override
+    public void del(Roykv.DelRequest request, StreamObserver<Roykv.DelReply> responseObserver) {
+        long deleted = 0;
+
+        for (String key : request.getKeysList()) {
+            if (kvStore.bDelete(key)) {
+                ++deleted;
+            }
+        }
+
+        responseObserver.onNext(Roykv.DelReply.newBuilder().setDeleted(deleted).build());
+        responseObserver.onCompleted();
     }
 
     @Override
