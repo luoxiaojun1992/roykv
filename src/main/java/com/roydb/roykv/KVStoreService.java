@@ -1,12 +1,10 @@
 package com.roydb.roykv;
 
-import com.alibaba.fastjson.JSONObject;
 import com.alipay.sofa.jraft.rhea.client.RheaIterator;
 import com.alipay.sofa.jraft.rhea.client.RheaKVStore;
 import com.alipay.sofa.jraft.rhea.storage.KVEntry;
 import com.alipay.sofa.jraft.rhea.util.ByteArray;
 import com.alipay.sofa.jraft.rhea.util.concurrent.DistributedLock;
-import com.google.protobuf.ByteString;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -48,41 +46,9 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
     @Override
     public void set(Roykv.SetRequest request, StreamObserver<Roykv.SetReply> responseObserver) {
-        //todo lock
-        long txnId = request.getTxnId();
-        if (txnId > 0L) {
-//            TxnService txnService = new TxnService(kvStore, txnStore);
-//            byte txnStatus = txnService.getTxnStatus(txnId);
-//            if (txnStatus == TxnService.TXN_OPEN) {
-//                JSONObject redoLogObj = new JSONObject();
-//                redoLogObj.put("opType", "set");
-//                redoLogObj.put("key", request.getKey());
-//                redoLogObj.put("value", request.getValue());
-//                if (!txnService.addTxnRedoLog(txnId, redoLogObj)) {
-//                    responseObserver.onNext(Roykv.SetReply.newBuilder().setResult(false).build());
-//                } else {
-//                    JSONObject undoLogObj = new JSONObject();
-//                    byte[] byteValue = kvStore.bGet(request.getKey(), true);
-//                    if (byteValue == null) {
-//                        undoLogObj.put("opType", "del");
-//                    } else {
-//                        undoLogObj.put("opType", "set");
-//                        undoLogObj.put("value", new String(byteValue));
-//                    }
-//                    undoLogObj.put("key", request.getKey());
-//                    responseObserver.onNext(
-//                            Roykv.SetReply.newBuilder().setResult(txnService.addTxnUndoLog(txnId, undoLogObj)).build()
-//                    );
-//                }
-//                responseObserver.onCompleted();
-//            } else {
-//                throw new RuntimeException(String.format("Txn[%d] status is [%d]", txnId, txnStatus));
-//            }
-        } else {
-            boolean result = kvStore.bPut(request.getKey(), request.getValue().getBytes(charset));
-            responseObserver.onNext(Roykv.SetReply.newBuilder().setResult(result).build());
-            responseObserver.onCompleted();
-        }
+        boolean result = kvStore.bPut(request.getKey(), request.getValue().getBytes(charset));
+        responseObserver.onNext(Roykv.SetReply.newBuilder().setResult(result).build());
+        responseObserver.onCompleted();
     }
 
     @Override
@@ -170,7 +136,7 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
         String keyPrefix = request.getKeyPrefix();
 
-        RheaIterator<KVEntry> iterator = kvStore.iterator((String) null, (String) null,10000);
+        RheaIterator<KVEntry> iterator = kvStore.iterator((String) null, (String) null, 10000);
         while (iterator.hasNext()) {
             KVEntry kvEntry = iterator.next();
             String key = new String(kvEntry.getKey());
@@ -215,11 +181,11 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
     @Override
     public void incr(Roykv.IncrRequest request, StreamObserver<Roykv.IncrReply> responseObserver) {
-        DistributedLock<byte[]> lock = kvStore.getDistributedLock("lock:key:" + request.getKey(), 10, TimeUnit.SECONDS);
+        long timeout = 10;
 
-        //todo lock wait
+        DistributedLock<byte[]> lock = kvStore.getDistributedLock("lock:key:" + request.getKey(), timeout, TimeUnit.SECONDS);
 
-        if (lock.tryLock()) {
+        if (lock.tryLock(timeout, TimeUnit.SECONDS)) {
             try {
                 byte[] value = kvStore.bGet(request.getKey(), true);
                 String strVal = new String(value);
@@ -240,6 +206,4 @@ public class KVStoreService extends KvGrpc.KvImplBase {
             responseObserver.onCompleted();
         }
     }
-
-    //todo distributed lock & unlock using rheakv
 }

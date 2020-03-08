@@ -17,10 +17,10 @@ public class PDServer {
     private static final Logger logger = LoggerFactory.getLogger(PDServer.class);
     private static final Charset charset = StandardCharsets.UTF_8;
 
-    public static void start(String confPath) throws IOException {
+    public static void start(String kvConfPath) throws IOException {
         final ObjectMapper mapperNode1 = new ObjectMapper(new YAMLFactory());
         final PlacementDriverServerOptions optsNode1 = mapperNode1.readValue(
-                new File(confPath),
+                new File(kvConfPath),
                 PlacementDriverServerOptions.class
         );
 

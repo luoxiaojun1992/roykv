@@ -126,33 +126,3 @@ message DelRequest {
 message DelReply {
   uint64 deleted = 1;
 }
-
-service Txn {
-  rpc Begin (BeginRequest) returns (BeginReply) {}
-  rpc Commit (CommitRequest) returns (CommitReply) {}
-  rpc Rollback (RollbackRequest) returns (RollbackReply) {}
-}
-
-message BeginRequest {
-
-}
-
-message BeginReply {
-  uint64 txnId = 1;
-}
-
-message CommitRequest {
-  uint64 txnId = 1;
-}
-
-message CommitReply {
-  bool result = 1;
-}
-
-message RollbackRequest {
-  uint64 txnId = 1;
-}
-
-message RollbackReply {
-  bool result = 1;
-}
