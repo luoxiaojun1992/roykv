@@ -100,12 +100,20 @@ public class KVStoreService extends KvGrpc.KvImplBase {
                         if (Integer.parseInt(realKey) < Integer.parseInt(realStartKey)) {
                             matched = false;
                         }
+                    } else if ("double".equals(startKeyType)) {
+                        if (Double.parseDouble(realKey) < Double.parseDouble(realStartKey)) {
+                            matched = false;
+                        }
                     }
                 }
                 if (endKey != null) {
                     String realEndKey = endKey.substring(keyPrefix.length());
-                    if ("integer".equals(startKeyType)) {
+                    if ("integer".equals(endKeyType)) {
                         if (Integer.parseInt(realKey) > Integer.parseInt(realEndKey)) {
+                            matched = false;
+                        }
+                    } else if ("double".equals(endKeyType)) {
+                        if (Double.parseDouble(realKey) > Double.parseDouble(realEndKey)) {
                             matched = false;
                         }
                     }
