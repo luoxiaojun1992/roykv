@@ -77,7 +77,9 @@ public class KVStoreService extends KvGrpc.KvImplBase {
     @Override
     public void scan(Roykv.ScanRequest request, StreamObserver<Roykv.ScanReply> responseObserver) {
         String startKey = "".equals(request.getStartKey()) ? null : request.getStartKey();
+        String startKeyType = request.getStartKeyType();
         String endKey = "".equals(request.getEndKey()) ? null : request.getEndKey();
+        String endKeyType = request.getEndKeyType();
         String keyPrefix = request.getKeyPrefix();
         long limit = request.getLimit();
 
@@ -90,11 +92,32 @@ public class KVStoreService extends KvGrpc.KvImplBase {
             KVEntry kvEntry = iterator.next();
             String key = new String(kvEntry.getKey());
             if (StringUtils.startsWith(key, keyPrefix)) {
-                scanReplyBuilder.addData(Roykv.KVEntry.newBuilder().setKey(key).
-                        setValue(new String(kvEntry.getValue())).build());
-                ++count;
-                if (count >= limit) {
-                    break;
+                boolean matched = true;
+                String realKey = key.substring(keyPrefix.length());
+                if (startKey != null) {
+                    String realStartKey = startKey.substring(keyPrefix.length());
+                    if ("integer".equals(startKeyType)) {
+                        if (Integer.parseInt(realKey) < Integer.parseInt(realStartKey)) {
+                            matched = false;
+                        }
+                    }
+                }
+                if (endKey != null) {
+                    String realEndKey = endKey.substring(keyPrefix.length());
+                    if ("integer".equals(startKeyType)) {
+                        if (Integer.parseInt(realKey) > Integer.parseInt(realEndKey)) {
+                            matched = false;
+                        }
+                    }
+                }
+
+                if (matched) {
+                    scanReplyBuilder.addData(Roykv.KVEntry.newBuilder().setKey(key).
+                            setValue(new String(kvEntry.getValue())).build());
+                    ++count;
+                    if (count >= limit) {
+                        break;
+                    }
                 }
             }
         }

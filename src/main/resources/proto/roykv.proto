@@ -11,15 +11,12 @@ service Kv {
   rpc GetAll (GetAllRequest) returns (GetAllReply) {}
   rpc Count (CountRequest) returns (CountReply) {}
   rpc Incr (IncrRequest) returns (IncrReply) {}
-  rpc AtomicOp (AtomicOpRequest) returns (AtomicOpReply) {}
-  rpc BatchAtomicOp (BatchAtomicOpRequest) returns (BatchAtomicOpReply) {}
   rpc Del (DelRequest) returns (DelReply) {}
 }
 
 message SetRequest {
   string key = 1;
   string value = 2;
-  uint64 txnId = 3;
 }
 
 message SetReply {
@@ -28,7 +25,6 @@ message SetReply {
 
 message GetRequest {
   string key = 1;
-  uint64 txnId = 2;
 }
 
 message GetReply {
@@ -37,7 +33,6 @@ message GetReply {
 
 message ExistRequest {
   string key = 1;
-  uint64 txnId = 2;
 }
 
 message ExistReply {
@@ -46,10 +41,11 @@ message ExistReply {
 
 message ScanRequest {
   string startKey = 1;
-  string endKey = 2;
-  string keyPrefix = 3;
-  uint64 limit = 4;
-  uint64 txnId = 5;
+  string startKeyType = 2;
+  string endKey = 3;
+  string endKeyType = 4;
+  string keyPrefix = 5;
+  uint64 limit = 6;
 }
 
 message KVEntry {
@@ -63,7 +59,6 @@ message ScanReply {
 
 message MGetRequest {
   repeated string keys = 1;
-  uint64 txnId = 2;
 }
 
 message MGetReply {
@@ -72,7 +67,6 @@ message MGetReply {
 
 message GetAllRequest {
   string keyPrefix = 1;
-  uint64 txnId = 2;
 }
 
 message GetAllReply {
@@ -83,7 +77,6 @@ message CountRequest {
   string startKey = 1;
   string endKey = 2;
   string keyPrefix = 3;
-  uint64 txnId = 4;
 }
 
 message CountReply {
@@ -97,26 +90,6 @@ message IncrRequest {
 
 message IncrReply {
   uint64 result = 1;
-}
-
-message AtomicOpRequest {
-  repeated AtomicOp atomicOp = 1;
-}
-
-message AtomicOp {
-
-}
-
-message AtomicOpReply {
-  bool result = 1;
-}
-
-message BatchAtomicOpRequest {
-  repeated AtomicOpRequest atomicOpRequest = 1;
-}
-
-message BatchAtomicOpReply {
-  repeated AtomicOpReply atomicOpReply = 1;
 }
 
 message DelRequest {
