@@ -122,7 +122,9 @@ public class TiKVProxyService extends TiKVGrpc.TiKVImplBase {
                 }
             }
 
-            if (lastKey == null) {
+            boolean skipFirst = (lastKey == null);
+
+            if (skipFirst) {
                 if (list.size() <= 0) {
                     break;
                 }
@@ -132,15 +134,17 @@ public class TiKVProxyService extends TiKVGrpc.TiKVImplBase {
                 }
             }
 
-            for (Kvrpcpb.KvPair kvEntry : list) {
-                String key = kvEntry.getKey().toStringUtf8();
+            boolean skipped = false;
 
-                if (lastKey != null) {
-                    if (lastKey.equals(key)) {
+            for (Kvrpcpb.KvPair kvEntry : list) {
+                if (skipFirst) {
+                    if (!skipped) {
+                        skipped = true;
                         continue;
                     }
                 }
 
+                String key = kvEntry.getKey().toStringUtf8();
                 lastKey = key;
 
                 if (!("".equals(endKey))) {
