@@ -5,13 +5,18 @@ import java.io.IOException;
 public class RoyKV {
     public static void main(String[] args) throws IOException {
         String component = args[0];
-        String kvConfPath = args[1];
 
         if ("kv".equals(component)) {
+            String kvConfPath = args[1];
             String grpcPort = args[2];
             KVStore.start(kvConfPath, grpcPort);
         } else if ("pd".equals(component)) {
+            String kvConfPath = args[1];
             PDServer.start(kvConfPath);
+        } else if ("tikv".equals(component)) {
+            String pdAddress = args[1];
+            String grpcPort = args[2];
+            TiKVProxy.start(pdAddress, grpcPort);
         }
     }
 }
