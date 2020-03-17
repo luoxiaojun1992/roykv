@@ -87,6 +87,7 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
         int count = 0;
 
+        //此处limit是buffer size,并不限制扫描行数
         RheaIterator<KVEntry> iterator = kvStore.iterator(startKey, endKey, (int) limit);
         while (iterator.hasNext()) {
             KVEntry kvEntry = iterator.next();
