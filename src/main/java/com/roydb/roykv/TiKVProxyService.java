@@ -65,7 +65,9 @@ public class TiKVProxyService extends TiKVGrpc.TiKVImplBase {
         String value = "";
         if (byteValue != null) {
             if (!(byteValue.isEmpty())) {
-                value = byteValue.toStringUtf8();
+                if (!(byteValue.equals(ByteString.EMPTY))) {
+                    value = byteValue.toStringUtf8();
+                }
             }
         }
 
@@ -77,7 +79,7 @@ public class TiKVProxyService extends TiKVGrpc.TiKVImplBase {
     public void exist(Roykv.ExistRequest request, StreamObserver<Roykv.ExistReply> responseObserver) {
         ByteString byteValue = getRawKvClient().get(ByteString.copyFromUtf8(request.getKey()));
 
-        boolean existed = ((byteValue != null) && (!(byteValue.isEmpty())));
+        boolean existed = ((byteValue != null) && (!(byteValue.isEmpty())) && (!(byteValue.equals(ByteString.EMPTY))));
 
         responseObserver.onNext(Roykv.ExistReply.newBuilder().setExisted(existed).build());
         responseObserver.onCompleted();
@@ -195,13 +197,174 @@ public class TiKVProxyService extends TiKVGrpc.TiKVImplBase {
 
         if ((count < limit) && (!("".equals(endKey)))) {
             ByteString lastKeyValue = rawKVClient.get(ByteString.copyFromUtf8(endKey));
-            if ((lastKeyValue != null) && (!(lastKeyValue.isEmpty()))) {
+            if ((lastKeyValue != null) && (!(lastKeyValue.isEmpty())) && (!(lastKeyValue.equals(ByteString.EMPTY)))) {
                 scanReplyBuilder.addData(Roykv.KVEntry.newBuilder().setKey(endKey).
                         setValue(lastKeyValue.toStringUtf8()).build());
             }
         }
 
         responseObserver.onNext(scanReplyBuilder.build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void mGet(Roykv.MGetRequest request, StreamObserver<Roykv.MGetReply> responseObserver) {
+        Roykv.MGetReply.Builder mGetReplyBuilder = Roykv.MGetReply.newBuilder();
+
+        RawKVClient rawKVClient = getRawKvClient();
+
+        for (int i = 0; i < request.getKeysCount(); ++i) {
+            String key = request.getKeys(i);
+            ByteString byteValue = rawKVClient.get(ByteString.copyFromUtf8(key));
+            if (byteValue != null) {
+                if (!(byteValue.isEmpty())) {
+                    if (!(byteValue.equals(ByteString.EMPTY))) {
+                        mGetReplyBuilder.putData(key, byteValue.toStringUtf8());
+                    }
+                }
+            }
+        }
+
+        responseObserver.onNext(mGetReplyBuilder.build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getAll(Roykv.GetAllRequest request, StreamObserver<Roykv.GetAllReply> responseObserver) {
+        Roykv.GetAllReply.Builder getAllReplyBuilder = Roykv.GetAllReply.newBuilder();
+
+        String keyPrefix = request.getKeyPrefix();
+
+        RawKVClient rawKVClient = getRawKvClient();
+
+        String lastKey = null;
+
+        while (true) {
+            List<Kvrpcpb.KvPair> list = null;
+
+            if (lastKey == null) {
+                list = rawKVClient.scan(ByteString.copyFromUtf8(""), 10000);
+            } else {
+                list = rawKVClient.scan(ByteString.copyFromUtf8(lastKey), 10000);
+            }
+
+            boolean skipFirst = (lastKey == null);
+
+            if (skipFirst) {
+                if (list.size() <= 0) {
+                    break;
+                }
+            } else {
+                if (list.size() <= 1) {
+                    break;
+                }
+            }
+
+            boolean skipped = false;
+
+            for (Kvrpcpb.KvPair kvEntry : list) {
+                if (skipFirst) {
+                    if (!skipped) {
+                        skipped = true;
+                        continue;
+                    }
+                }
+
+                String key = kvEntry.getKey().toStringUtf8();
+                lastKey = key;
+
+                if (StringUtils.startsWith(key, keyPrefix)) {
+                    getAllReplyBuilder.putData(key, kvEntry.getValue().toStringUtf8());
+                }
+            }
+        }
+
+        responseObserver.onNext(getAllReplyBuilder.build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void count(Roykv.CountRequest request, StreamObserver<Roykv.CountReply> responseObserver) {
+        //todo handle key type
+        String startKey = request.getStartKey();
+        String endKey = request.getEndKey();
+        String keyPrefix = request.getKeyPrefix();
+
+        Roykv.CountReply.Builder countReplyBuilder = Roykv.CountReply.newBuilder();
+
+        int count = 0;
+
+        RawKVClient rawKVClient = getRawKvClient();
+
+        String lastKey = null;
+
+        while (true) {
+            List<Kvrpcpb.KvPair> list = null;
+            if ("".equals(endKey)) {
+                if (lastKey == null) {
+                    list = rawKVClient.scan(ByteString.copyFromUtf8(startKey), 10000);
+                } else {
+                    list = rawKVClient.scan(ByteString.copyFromUtf8(lastKey), 10000);
+                }
+            } else {
+                if (lastKey == null) {
+                    list = rawKVClient.scan(
+                            ByteString.copyFromUtf8(startKey),
+                            ByteString.copyFromUtf8(endKey)
+                    );
+                } else {
+                    list = rawKVClient.scan(
+                            ByteString.copyFromUtf8(lastKey),
+                            ByteString.copyFromUtf8(endKey)
+                    );
+                }
+            }
+
+            boolean skipFirst = (lastKey == null);
+
+            if (skipFirst) {
+                if (list.size() <= 0) {
+                    break;
+                }
+            } else {
+                if (list.size() <= 1) {
+                    break;
+                }
+            }
+
+            boolean skipped = false;
+
+            for (Kvrpcpb.KvPair kvEntry : list) {
+                if (skipFirst) {
+                    if (!skipped) {
+                        skipped = true;
+                        continue;
+                    }
+                }
+
+                String key = kvEntry.getKey().toStringUtf8();
+                lastKey = key;
+
+                if (!("".equals(endKey))) {
+                    if (key.equals(endKey)) {
+                        continue;
+                    }
+                }
+
+                if (StringUtils.startsWith(key, keyPrefix)) {
+                    ++count;
+                }
+            }
+        }
+
+        if (!("".equals(endKey))) {
+            ByteString lastKeyValue = rawKVClient.get(ByteString.copyFromUtf8(endKey));
+            if ((lastKeyValue != null) && (!(lastKeyValue.isEmpty())) && (!(lastKeyValue.equals(ByteString.EMPTY)))) {
+                ++count;
+            }
+        }
+
+        responseObserver.onNext(countReplyBuilder.setCount(count).build());
         responseObserver.onCompleted();
     }
 }
