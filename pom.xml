@@ -96,18 +96,18 @@
         <dependency>
             <groupId>com.alipay.sofa</groupId>
             <artifactId>jraft-core</artifactId>
-            <version>1.2.5</version>
+            <version>1.3.0</version>
         </dependency>
         <!-- rheakv -->
         <dependency>
             <groupId>com.alipay.sofa</groupId>
             <artifactId>jraft-rheakv-core</artifactId>
-            <version>1.2.5</version>
+            <version>1.3.0</version>
         </dependency>
         <dependency>
             <groupId>com.alipay.sofa</groupId>
             <artifactId>jraft-rheakv-pd</artifactId>
-            <version>1.2.5</version>
+            <version>1.3.0</version>
         </dependency>
         <!-- jsr305 -->
         <dependency>
@@ -169,7 +169,7 @@
         <dependency>
             <groupId>org.rocksdb</groupId>
             <artifactId>rocksdbjni</artifactId>
-            <version>5.14.2</version>
+            <version>5.18.3</version>
         </dependency>
         <!-- java thread affinity -->
         <dependency>
