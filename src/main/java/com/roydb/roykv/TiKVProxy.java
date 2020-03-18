@@ -12,10 +12,11 @@ public class TiKVProxy {
     private static final Logger logger = LoggerFactory.getLogger(TiKVProxy.class);
     private static final Charset charset = StandardCharsets.UTF_8;
 
-    public static void start(String pdAddress, String grpcPort) throws IOException {
+    public static void start(String pdAddress, String grpcPort) throws IOException, InterruptedException {
         ServerBuilder.forPort(Integer.parseInt(grpcPort))
                 .addService(new TiKVProxyService(pdAddress))
                 .build()
-                .start();
+                .start()
+                .awaitTermination();
     }
 }

@@ -3,7 +3,7 @@ package com.roydb.roykv;
 import java.io.IOException;
 
 public class RoyKV {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         String component = args[0];
 
         if ("kv".equals(component)) {
