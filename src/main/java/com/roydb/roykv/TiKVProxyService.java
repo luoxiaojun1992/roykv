@@ -96,7 +96,7 @@ public class TiKVProxyService extends TiKVGrpc.TiKVImplBase {
 
         Roykv.ScanReply.Builder scanReplyBuilder = Roykv.ScanReply.newBuilder();
 
-        int count = 0;
+        long count = 0;
 
         RawKVClient rawKVClient = getRawKvClient();
 
@@ -106,9 +106,9 @@ public class TiKVProxyService extends TiKVGrpc.TiKVImplBase {
             List<Kvrpcpb.KvPair> list = null;
             if ("".equals(endKey)) {
                 if (lastKey == null) {
-                    list = rawKVClient.scan(ByteString.copyFromUtf8(startKey), (int) limit);
+                    list = rawKVClient.scan(ByteString.copyFromUtf8(startKey), (int) (limit > Integer.MAX_VALUE ? Integer.MAX_VALUE : limit));
                 } else {
-                    list = rawKVClient.scan(ByteString.copyFromUtf8(lastKey), (int) limit);
+                    list = rawKVClient.scan(ByteString.copyFromUtf8(lastKey), (int) (limit > Integer.MAX_VALUE ? Integer.MAX_VALUE : limit));
                 }
             } else {
                 if (lastKey == null) {

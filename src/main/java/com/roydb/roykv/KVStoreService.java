@@ -85,10 +85,10 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
         Roykv.ScanReply.Builder scanReplyBuilder = Roykv.ScanReply.newBuilder();
 
-        int count = 0;
+        long count = 0;
 
         //此处limit是buffer size,并不限制扫描行数
-        RheaIterator<KVEntry> iterator = kvStore.iterator(startKey, endKey, (int) limit);
+        RheaIterator<KVEntry> iterator = kvStore.iterator(startKey, endKey, (int)(limit > Integer.MAX_VALUE ? Integer.MAX_VALUE : limit));
         while (iterator.hasNext()) {
             KVEntry kvEntry = iterator.next();
             String key = new String(kvEntry.getKey());
