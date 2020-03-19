@@ -292,7 +292,7 @@ public class TiKVProxyService extends TiKVGrpc.TiKVImplBase {
 
         Roykv.CountReply.Builder countReplyBuilder = Roykv.CountReply.newBuilder();
 
-        int count = 0;
+        long count = 0;
 
         RawKVClient rawKVClient = getRawKvClient();
 
