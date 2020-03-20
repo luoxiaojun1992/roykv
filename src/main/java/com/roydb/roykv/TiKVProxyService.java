@@ -127,11 +127,11 @@ public class TiKVProxyService extends TiKVGrpc.TiKVImplBase {
             boolean skipFirst = (lastKey == null);
 
             if (skipFirst) {
-                if (list.size() <= 0) {
+                if (list.size() <= 1) {
                     break;
                 }
             } else {
-                if (list.size() <= 1) {
+                if (list.size() <= 0) {
                     break;
                 }
             }
@@ -251,11 +251,11 @@ public class TiKVProxyService extends TiKVGrpc.TiKVImplBase {
             boolean skipFirst = (lastKey == null);
 
             if (skipFirst) {
-                if (list.size() <= 0) {
+                if (list.size() <= 1) {
                     break;
                 }
             } else {
-                if (list.size() <= 1) {
+                if (list.size() <= 0) {
                     break;
                 }
             }
@@ -323,11 +323,11 @@ public class TiKVProxyService extends TiKVGrpc.TiKVImplBase {
             boolean skipFirst = (lastKey == null);
 
             if (skipFirst) {
-                if (list.size() <= 0) {
+                if (list.size() <= 1) {
                     break;
                 }
             } else {
-                if (list.size() <= 1) {
+                if (list.size() <= 0) {
                     break;
                 }
             }
