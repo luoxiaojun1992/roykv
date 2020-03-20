@@ -158,7 +158,7 @@ public class TiKVProxyService extends TiKVGrpc.TiKVImplBase {
                 if (StringUtils.startsWith(key, keyPrefix)) {
                     boolean matched = true;
                     String realKey = key.substring(keyPrefix.length());
-                    if (!("".equals(startKey))) {
+                    if (!("".equals(startKey.substring(keyPrefix.length())))) {
                         String realStartKey = startKey.substring(keyPrefix.length());
                         if ("integer".equals(startKeyType)) {
                             if (Integer.parseInt(realKey) < Integer.parseInt(realStartKey)) {

@@ -76,11 +76,11 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
     @Override
     public void scan(Roykv.ScanRequest request, StreamObserver<Roykv.ScanReply> responseObserver) {
-        String startKey = "".equals(request.getStartKey()) ? null : request.getStartKey();
+        String keyPrefix = request.getKeyPrefix();
+        String startKey = "".equals(request.getStartKey().substring(keyPrefix.length())) ? null : request.getStartKey();
         String startKeyType = request.getStartKeyType();
         String endKey = "".equals(request.getEndKey()) ? null : request.getEndKey();
         String endKeyType = request.getEndKeyType();
-        String keyPrefix = request.getKeyPrefix();
         long limit = request.getLimit();
 
         Roykv.ScanReply.Builder scanReplyBuilder = Roykv.ScanReply.newBuilder();
@@ -184,9 +184,9 @@ public class KVStoreService extends KvGrpc.KvImplBase {
     @Override
     public void count(Roykv.CountRequest request, StreamObserver<Roykv.CountReply> responseObserver) {
         //todo handle key type
-        String startKey = "".equals(request.getStartKey()) ? null : request.getStartKey();
-        String endKey = "".equals(request.getEndKey()) ? null : request.getEndKey();
         String keyPrefix = request.getKeyPrefix();
+        String startKey = "".equals(request.getStartKey().substring(keyPrefix.length())) ? null : request.getStartKey();
+        String endKey = "".equals(request.getEndKey()) ? null : request.getEndKey();
 
         Roykv.CountReply.Builder countReplyBuilder = Roykv.CountReply.newBuilder();
 
