@@ -82,6 +82,18 @@ public class KVStoreService extends KvGrpc.KvImplBase {
         String endKey = "".equals(request.getEndKey()) ? null : request.getEndKey();
         String endKeyType = request.getEndKeyType();
 
+        Roykv.ScanReply.Builder scanReplyBuilder = Roykv.ScanReply.newBuilder();
+
+        if ((startKey != null) && (startKey.equals(endKey))) {
+            byte[] byteValue = kvStore.bGet(startKey, true);
+            if (byteValue != null) {
+                scanReplyBuilder.addData(Roykv.KVEntry.newBuilder().setKey(startKey).setValue(new String(byteValue)).build());
+            }
+
+            responseObserver.onNext(scanReplyBuilder.build());
+            responseObserver.onCompleted();
+        }
+
         String scanStartString = keyPrefix;
         String scanEndString = null;
         if ("string".equals(startKeyType)) {
@@ -92,8 +104,6 @@ public class KVStoreService extends KvGrpc.KvImplBase {
         }
 
         long limit = request.getLimit();
-
-        Roykv.ScanReply.Builder scanReplyBuilder = Roykv.ScanReply.newBuilder();
 
         long count = 0;
 
