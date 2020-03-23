@@ -205,7 +205,6 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
     @Override
     public void count(Roykv.CountRequest request, StreamObserver<Roykv.CountReply> responseObserver) {
-        //todo handle key type
         String keyPrefix = request.getKeyPrefix();
         String startKey = "".equals(request.getStartKey().substring(keyPrefix.length())) ? null : request.getStartKey();
         String startKeyType = request.getStartKeyType();
