@@ -81,6 +81,16 @@ public class KVStoreService extends KvGrpc.KvImplBase {
         String startKeyType = request.getStartKeyType();
         String endKey = "".equals(request.getEndKey()) ? null : request.getEndKey();
         String endKeyType = request.getEndKeyType();
+
+        String scanStartString = keyPrefix;
+        String scanEndString = null;
+        if ("string".equals(startKeyType)) {
+            scanStartString = startKey;
+        }
+        if ("string".equals(endKeyType)) {
+            scanEndString = endKey;
+        }
+
         long limit = request.getLimit();
 
         Roykv.ScanReply.Builder scanReplyBuilder = Roykv.ScanReply.newBuilder();
@@ -88,7 +98,9 @@ public class KVStoreService extends KvGrpc.KvImplBase {
         long count = 0;
 
         //此处limit是buffer size,并不限制扫描行数
-        RheaIterator<KVEntry> iterator = kvStore.iterator(startKey, endKey, (int)(limit > Integer.MAX_VALUE ? Integer.MAX_VALUE : limit));
+        RheaIterator<KVEntry> iterator = kvStore.iterator(
+                scanStartString, scanEndString, (int)(limit > Integer.MAX_VALUE ? Integer.MAX_VALUE : limit)
+        );
         while (iterator.hasNext()) {
             KVEntry kvEntry = iterator.next();
             String key = new String(kvEntry.getKey());

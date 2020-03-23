@@ -13,10 +13,6 @@ public class RoyKV {
         } else if ("pd".equals(component)) {
             String kvConfPath = args[1];
             PDServer.start(kvConfPath);
-        } else if ("tikv".equals(component)) {
-            String pdAddress = args[1];
-            String grpcPort = args[2];
-            TiKVProxy.start(pdAddress, grpcPort);
         }
     }
 }
