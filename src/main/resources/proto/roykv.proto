@@ -101,15 +101,3 @@ message DelRequest {
 message DelReply {
   uint64 deleted = 1;
 }
-
-service TiKV {
-  rpc Set (SetRequest) returns (SetReply) {}
-  rpc Get (GetRequest) returns (GetReply) {}
-  rpc Exist (ExistRequest) returns (ExistReply) {}
-  rpc Scan (ScanRequest) returns (ScanReply) {}
-  rpc MGet (MGetRequest) returns (MGetReply) {}
-  rpc GetAll (GetAllRequest) returns (GetAllReply) {}
-  rpc Count (CountRequest) returns (CountReply) {}
-  rpc Incr (IncrRequest) returns (IncrReply) {}
-  rpc Del (DelRequest) returns (DelReply) {}
-}
