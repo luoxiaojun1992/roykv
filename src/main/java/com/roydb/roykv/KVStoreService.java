@@ -94,11 +94,7 @@ public class KVStoreService extends KvGrpc.KvImplBase {
             responseObserver.onCompleted();
         }
 
-        String scanStartString = keyPrefix;
         String scanEndString = null;
-        if ("string".equals(startKeyType)) {
-            scanStartString = startKey;
-        }
         if ("string".equals(endKeyType)) {
             scanEndString = endKey;
         }
@@ -109,7 +105,7 @@ public class KVStoreService extends KvGrpc.KvImplBase {
 
         //此处limit是buffer size,并不限制扫描行数
         RheaIterator<KVEntry> iterator = kvStore.iterator(
-                scanStartString, scanEndString, (int)(limit > Integer.MAX_VALUE ? Integer.MAX_VALUE : limit)
+                startKey, scanEndString, (int)(limit > Integer.MAX_VALUE ? Integer.MAX_VALUE : limit)
         );
         while (iterator.hasNext()) {
             KVEntry kvEntry = iterator.next();
@@ -225,16 +221,12 @@ public class KVStoreService extends KvGrpc.KvImplBase {
             responseObserver.onCompleted();
         }
 
-        String scanStartString = keyPrefix;
         String scanEndString = null;
-        if ("string".equals(startKeyType)) {
-            scanStartString = startKey;
-        }
         if ("string".equals(endKeyType)) {
             scanEndString = endKey;
         }
 
-        RheaIterator<KVEntry> iterator = kvStore.iterator(scanStartString, scanEndString, 10000);
+        RheaIterator<KVEntry> iterator = kvStore.iterator(startKey, scanEndString, 10000);
         while (iterator.hasNext()) {
             KVEntry kvEntry = iterator.next();
             String key = new String(kvEntry.getKey());
